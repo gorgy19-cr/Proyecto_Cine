@@ -108,26 +108,30 @@ document.getElementById("cambiar-rol")
 
   });
 
+const formularioSala = document.getElementById("form-sala");
 
-// CONFIGURACIÓN TEMPORAL DE FORMULARIOS
-// Posteriormente se conectarán con C++ y SQLite.
+formularioSala.addEventListener("submit", async function(evento) {
+  evento.preventDefault();
 
-document.querySelectorAll("form")
-  .forEach(function(formulario) {
+  const datos = Object.fromEntries(new FormData(formularioSala));
 
-    formulario.addEventListener(
-      "submit",
-      function(evento) {
+  try {
+    const respuesta = await fetch("http://localhost:3000/api/salas", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(datos)
+    });
 
-        // Evitar que se recargue la página
-        evento.preventDefault();
+    if (!respuesta.ok) {
+      throw new Error("El servidor no pudo registrar la sala.");
+    }
 
-        alert(
-          "Este formulario se conectará más adelante " +
-          "con el backend en C++ y SQLite."
-        );
-
-      }
-    );
-
-  });
+    alert("Sala registrada correctamente.");
+    formularioSala.reset();
+  } catch (error) {
+    alert("No se pudo conectar con el servidor C++.");
+    console.error(error);
+  }
+});
