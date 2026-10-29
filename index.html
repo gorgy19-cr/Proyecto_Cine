@@ -1,12 +1,721 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sistema de administración y reservación de butacas de cine">
+  <title>CinePlus | Reservaciones</title>
+
+  <!-- Archivos que conectaremos después -->
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/app.js" defer></script>
 </head>
+
 <body>
-    
-    
+
+  <!-- ENCABEZADO Y MENÚ -->
+  <header class="encabezado">
+    <a class="logo" href="#inicio">🎬 CinePlus</a>
+
+    <nav aria-label="Navegación principal">
+      <ul>
+        <li><a href="#inicio">Inicio</a></li>
+        <li><a href="#reservar">Reservar</a></li>
+        <li><a href="#administracion">Administración</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ========================================== -->
+    <!-- PÁGINA PRINCIPAL -->
+    <!-- ========================================== -->
+
+    <section id="inicio" class="seccion">
+      <h1>Bienvenido a CinePlus</h1>
+      <p>Consultá nuestra cartelera y reservá tus butacas.</p>
+
+      <a href="#reservar" class="boton">
+        Reservar entradas
+      </a>
+
+      <h2>Películas en cartelera</h2>
+
+      <p id="mensaje-cartelera"
+         role="status"
+         aria-live="polite">
+      </p>
+
+      <!-- Aquí JavaScript mostrará las películas -->
+      <div id="lista-cartelera"
+           class="cuadricula-peliculas">
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- SISTEMA DE RESERVACIONES -->
+    <!-- ========================================== -->
+
+    <section id="reservar" class="seccion">
+
+      <h2>Reservar entradas</h2>
+      <p>Completá los pasos para reservar tus butacas.</p>
+
+
+      <!-- PASO 1: REGISTRO DEL CLIENTE -->
+
+      <section id="paso-cliente"
+               class="paso-reserva"
+               aria-labelledby="titulo-cliente">
+
+        <h3 id="titulo-cliente">
+          Paso 1. Datos del cliente
+        </h3>
+
+        <form id="form-cliente">
+
+          <div class="campo">
+            <label for="cliente-nombre">
+              Nombre completo
+            </label>
+
+            <input type="text"
+                   id="cliente-nombre"
+                   name="nombre"
+                   required
+                   maxlength="100"
+                   autocomplete="name">
+          </div>
+
+          <div class="campo">
+            <label for="cliente-telefono">
+              Número de teléfono
+            </label>
+
+            <input type="tel"
+                   id="cliente-telefono"
+                   name="telefono"
+                   required
+                   maxlength="20"
+                   autocomplete="tel"
+                   placeholder="Ej.: 8888-8888">
+          </div>
+
+          <button type="submit">
+            Continuar a películas
+          </button>
+
+        </form>
+      </section>
+
+
+      <!-- PASO 2: SELECCIÓN DE PELÍCULA -->
+
+      <section id="paso-funcion"
+               class="paso-reserva"
+               aria-labelledby="titulo-funcion"
+               hidden>
+
+        <h3 id="titulo-funcion">
+          Paso 2. Película y función
+        </h3>
+
+        <form id="form-funcion">
+
+          <div class="campo">
+            <label for="reserva-pelicula">
+              Película
+            </label>
+
+            <select id="reserva-pelicula"
+                    name="pelicula_id"
+                    required>
+
+              <option value="">
+                Seleccioná una película
+              </option>
+
+              <!-- Las películas vendrán del backend -->
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="reserva-funcion">
+              Fecha y horario disponibles
+            </label>
+
+            <select id="reserva-funcion"
+                    name="funcion_id"
+                    required
+                    disabled>
+
+              <option value="">
+                Primero seleccioná una película
+              </option>
+
+              <!-- Horarios desde el backend -->
+            </select>
+          </div>
+
+          <button type="button" id="volver-cliente">
+            Atrás
+          </button>
+
+          <button type="submit">
+            Continuar a cantidad
+          </button>
+
+        </form>
+      </section>
+
+
+      <!-- PASO 3: CANTIDAD DE ENTRADAS -->
+
+      <section id="paso-cantidad"
+               class="paso-reserva"
+               aria-labelledby="titulo-cantidad"
+               hidden>
+
+        <h3 id="titulo-cantidad">
+          Paso 3. Cantidad de entradas
+        </h3>
+
+        <form id="form-cantidad">
+
+          <div class="campo">
+            <label for="reserva-cantidad">
+              ¿Cuántas butacas necesitás?
+            </label>
+
+            <input type="number"
+                   id="reserva-cantidad"
+                   name="cantidad"
+                   min="1"
+                   max="20"
+                   step="1"
+                   required>
+          </div>
+
+          <p>
+            Precio por entrada:
+            <output id="precio-unitario">—</output>
+          </p>
+
+          <p>
+            Total estimado:
+            <output id="total-estimado">—</output>
+          </p>
+
+          <button type="button" id="volver-funcion">
+            Atrás
+          </button>
+
+          <button type="submit">
+            Seleccionar butacas
+          </button>
+
+        </form>
+      </section>
+
+
+      <!-- PASO 4: SELECCIÓN DE BUTACAS -->
+
+      <section id="paso-butacas"
+               class="paso-reserva"
+               aria-labelledby="titulo-butacas"
+               hidden>
+
+        <h3 id="titulo-butacas">
+          Paso 4. Selección de butacas
+        </h3>
+
+        <p>
+          Seleccioná únicamente las butacas disponibles.
+        </p>
+
+        <p id="detalle-funcion"></p>
+
+        <div class="pantalla-cine" aria-hidden="true">
+          PANTALLA
+        </div>
+
+        <!--
+          JavaScript generará los botones de las butacas.
+
+          Cada butaca tendrá una fila y una columna.
+
+          Sus estados se obtendrán del backend C++.
+        -->
+
+        <div id="mapa-butacas"
+             class="mapa-butacas"
+             aria-label="Mapa de butacas">
+        </div>
+
+        <!-- COLORES DE LAS BUTACAS -->
+
+        <div class="leyenda-butacas"
+             aria-label="Estados de las butacas">
+
+          <span class="estado disponible">
+            Disponible (verde)
+          </span>
+
+          <span class="estado ocupada">
+            Ocupada (rojo)
+          </span>
+
+          <span class="estado seleccionada">
+            Seleccionada (amarillo)
+          </span>
+
+          <span class="estado inhabilitada">
+            Inhabilitada (gris)
+          </span>
+
+        </div>
+
+        <p>
+          Butacas seleccionadas:
+          <output id="butacas-seleccionadas">0</output>
+          /
+          <output id="butacas-solicitadas">0</output>
+        </p>
+
+        <p id="mensaje-butacas"
+           role="status"
+           aria-live="polite">
+        </p>
+
+        <button type="button" id="volver-cantidad">
+          Atrás
+        </button>
+
+        <button type="button"
+                id="continuar-confirmacion"
+                disabled>
+          Continuar al pago
+        </button>
+
+      </section>
+
+
+      <!-- PASO 5: CONFIRMACIÓN DE RESERVA -->
+
+      <section id="paso-confirmacion"
+               class="paso-reserva"
+               aria-labelledby="titulo-confirmacion"
+               hidden>
+
+        <h3 id="titulo-confirmacion">
+          Paso 5. Confirmación y pago simulado
+        </h3>
+
+        <!-- Resumen generado por JavaScript -->
+        <div id="resumen-reserva">
+        </div>
+
+        <p>
+          No se solicitarán datos reales de tarjeta.
+          El pago es una simulación.
+        </p>
+
+        <p id="mensaje-confirmacion"
+           role="status"
+           aria-live="polite">
+        </p>
+
+        <button type="button" id="volver-butacas">
+          Atrás
+        </button>
+
+        <button type="button" id="confirmar-reserva">
+          Simular pago y confirmar reservación
+        </button>
+
+      </section>
+
+
+      <!-- RESERVACIÓN EXITOSA -->
+
+      <section id="reserva-exitosa"
+               class="paso-reserva"
+               aria-labelledby="titulo-exito"
+               hidden>
+
+        <h3 id="titulo-exito">
+          ¡Reservación confirmada!
+        </h3>
+
+        <p id="detalle-confirmacion"></p>
+
+        <a href="#inicio" id="regresar-inicio">
+          Volver a la cartelera
+        </a>
+
+      </section>
+
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- PANEL DE ADMINISTRACIÓN -->
+    <!-- ========================================== -->
+
+    <section id="administracion" class="seccion">
+
+      <h2>Panel de administración</h2>
+
+      <p>
+        Gestión de salas, butacas, películas y funciones.
+      </p>
+
+
+      <!-- ADMINISTRACIÓN DE SALAS -->
+
+      <section id="admin-salas"
+               aria-labelledby="titulo-admin-salas">
+
+        <h3 id="titulo-admin-salas">
+          Registrar sala
+        </h3>
+
+        <form id="form-sala">
+
+          <div class="campo">
+            <label for="sala-nombre">
+              Nombre o identificador
+            </label>
+
+            <input type="text"
+                   id="sala-nombre"
+                   name="nombre"
+                   maxlength="50"
+                   required>
+          </div>
+
+          <div class="campo">
+            <label for="sala-agrupaciones">
+              Cantidad de agrupaciones (filas)
+            </label>
+
+            <input type="number"
+                   id="sala-agrupaciones"
+                   name="agrupaciones"
+                   min="1"
+                   step="1"
+                   required>
+          </div>
+
+          <div class="campo">
+            <label for="sala-butacas-grupo">
+              Butacas por agrupación
+            </label>
+
+            <input type="number"
+                   id="sala-butacas-grupo"
+                   name="butacas_por_agrupacion"
+                   min="1"
+                   step="1"
+                   required>
+          </div>
+
+          <button type="submit">
+            Registrar sala
+          </button>
+
+        </form>
+
+
+        <!-- TABLA DE SALAS -->
+
+        <h4>Salas registradas</h4>
+
+        <p id="mensaje-salas"
+           role="status"
+           aria-live="polite">
+        </p>
+
+        <div class="tabla-desplazable">
+
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Sala</th>
+                <th scope="col">Agrupaciones</th>
+                <th scope="col">Butacas por grupo</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody id="tabla-salas">
+            </tbody>
+          </table>
+
+        </div>
+
+
+        <!-- ADMINISTRACIÓN DE BUTACAS -->
+
+        <h4>Administrar butacas individuales</h4>
+
+        <label for="admin-sala-butacas">
+          Sala
+        </label>
+
+        <select id="admin-sala-butacas">
+          <option value="">
+            Seleccioná una sala
+          </option>
+        </select>
+
+        <div id="mapa-butacas-admin"
+             aria-label="Distribución de butacas para administración">
+        </div>
+
+        <p id="mensaje-admin-butacas"
+           role="status"
+           aria-live="polite">
+        </p>
+
+      </section>
+
+
+      <!-- ========================================== -->
+      <!-- ADMINISTRACIÓN DE PELÍCULAS -->
+      <!-- ========================================== -->
+
+      <section id="admin-peliculas"
+               aria-labelledby="titulo-admin-peliculas">
+
+        <h3 id="titulo-admin-peliculas">
+          Registrar película
+        </h3>
+
+        <form id="form-pelicula">
+
+          <div class="campo">
+            <label for="pelicula-nombre">
+              Nombre de la película
+            </label>
+
+            <input type="text"
+                   id="pelicula-nombre"
+                   name="nombre"
+                   maxlength="150"
+                   required>
+          </div>
+
+          <div class="campo">
+            <label for="pelicula-inicio">
+              Inicio de exhibición
+            </label>
+
+            <input type="date"
+                   id="pelicula-inicio"
+                   name="fecha_inicio"
+                   required>
+          </div>
+
+          <div class="campo">
+            <label for="pelicula-fin">
+              Finalización de exhibición
+            </label>
+
+            <input type="date"
+                   id="pelicula-fin"
+                   name="fecha_fin"
+                   required>
+          </div>
+
+          <div class="campo">
+            <label for="pelicula-precio">
+              Precio por entrada (₡)
+            </label>
+
+            <input type="number"
+                   id="pelicula-precio"
+                   name="precio"
+                   min="0"
+                   step="0.01"
+                   required>
+          </div>
+
+          <div class="campo">
+            <label for="pelicula-sala">
+              Sala
+            </label>
+
+            <select id="pelicula-sala"
+                    name="sala_id"
+                    required>
+
+              <option value="">
+                Seleccioná una sala activa
+              </option>
+
+            </select>
+          </div>
+
+          <button type="submit">
+            Registrar película
+          </button>
+
+        </form>
+
+
+        <!-- LISTADO DE PELÍCULAS -->
+
+        <p id="mensaje-peliculas"
+           role="status"
+           aria-live="polite">
+        </p>
+
+        <h4>Películas registradas</h4>
+
+        <div class="tabla-desplazable">
+
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Película</th>
+                <th scope="col">Fechas</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Sala</th>
+                <th scope="col">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody id="tabla-peliculas">
+            </tbody>
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- ========================================== -->
+      <!-- ADMINISTRACIÓN DE FUNCIONES Y HORARIOS -->
+      <!-- ========================================== -->
+
+      <section id="admin-funciones"
+               aria-labelledby="titulo-admin-funciones">
+
+        <h3 id="titulo-admin-funciones">
+          Registrar función / horario
+        </h3>
+
+        <p>
+          Una función combina película, fecha, hora y sala.
+          Así las reservas se mantienen separadas por función.
+        </p>
+
+        <form id="form-funcion-admin">
+
+          <div class="campo">
+            <label for="funcion-pelicula">
+              Película
+            </label>
+
+            <select id="funcion-pelicula"
+                    name="pelicula_id"
+                    required>
+
+              <option value="">
+                Seleccioná una película
+              </option>
+
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="funcion-sala">
+              Sala
+            </label>
+
+            <select id="funcion-sala"
+                    name="sala_id"
+                    required>
+
+              <option value="">
+                Seleccioná una sala activa
+              </option>
+
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="funcion-fecha">
+              Fecha
+            </label>
+
+            <input type="date"
+                   id="funcion-fecha"
+                   name="fecha"
+                   required>
+          </div>
+
+          <div class="campo">
+            <label for="funcion-hora">
+              Hora
+            </label>
+
+            <input type="time"
+                   id="funcion-hora"
+                   name="hora"
+                   required>
+          </div>
+
+          <button type="submit">
+            Registrar función
+          </button>
+
+        </form>
+
+        <p id="mensaje-funciones"
+           role="status"
+           aria-live="polite">
+        </p>
+
+
+        <!-- TABLA DE FUNCIONES -->
+
+        <div class="tabla-desplazable">
+
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Película</th>
+                <th scope="col">Sala</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Hora</th>
+                <th scope="col">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody id="tabla-funciones">
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+    </section>
+
+  </main>
+
+
+  <!-- PIE DE PÁGINA -->
+
+  <footer>
+    <p>&copy; 2026 CinePlus. Proyecto académico.</p>
+  </footer>
+
 </body>
 </html>
